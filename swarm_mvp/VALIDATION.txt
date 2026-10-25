@@ -1,0 +1,39 @@
+Swarm v0.1 validation — 25 October 2026
+
+test_budget_conservation_and_tie (test_swarm.SwarmTests.test_budget_conservation_and_tie) ... ok
+test_cannot_award_other_team (test_swarm.SwarmTests.test_cannot_award_other_team) ... ok
+test_credit_split (test_swarm.SwarmTests.test_credit_split) ... ok
+test_equal_budgets_despite_unequal_team_sizes (test_swarm.SwarmTests.test_equal_budgets_despite_unequal_team_sizes) ... ok
+test_invalid_scores_leave_no_result (test_swarm.SwarmTests.test_invalid_scores_leave_no_result) ... ok
+test_invalid_spend_rejected (test_swarm.SwarmTests.test_invalid_spend_rejected) ... ok
+test_join_does_not_allow_multiple_seats_for_owner (test_swarm.SwarmTests.test_join_does_not_allow_multiple_seats_for_owner) ... ok
+test_leave_revokes_notes_and_locks_reentry (test_swarm.SwarmTests.test_leave_revokes_notes_and_locks_reentry) ... ok
+test_notes_need_approval_and_allow_names (test_swarm.SwarmTests.test_notes_need_approval_and_allow_names) ... ok
+test_overspend_does_not_change_ledger (test_swarm.SwarmTests.test_overspend_does_not_change_ledger) ... ok
+test_requires_two_teams (test_swarm.SwarmTests.test_requires_two_teams) ... ok
+test_score_not_spendable_and_duplicate_outcome_blocked (test_swarm.SwarmTests.test_score_not_spendable_and_duplicate_outcome_blocked) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.001s
+
+OK
+
+Mock demo output:
+{
+  "simulation_only": true,
+  "teams": {
+    "A": 70.0,
+    "B": 60.0
+  },
+  "individuals": {
+    "agency-alpha": 70.0,
+    "agency-beta": 60.0
+  },
+  "winner": "A",
+  "remaining_work_units": {
+    "A": 55,
+    "B": 55,
+    "referee": 30
+  },
+  "spent_work_units": 60
+}

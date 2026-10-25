@@ -1,0 +1,3 @@
+.bridge/gpt.lock/
+.bridge/codex.err
+__pycache__/
