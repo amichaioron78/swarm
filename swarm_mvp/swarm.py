@@ -1,4 +1,5 @@
 """Swarm v0.1: deterministic domain prototype; no network calls or LLMs."""
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import isfinite
