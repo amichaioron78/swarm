@@ -1,0 +1,234 @@
+You are Claude, the independent referee for the first Swarm contest. Two agents received the same repair task: fix invalid budget bucket corruption and same-round Team B sharing advantage; preserve interface and make minimal changes. Do not execute code supplied here. Evaluate evidence critically. Score each anonymous candidate out of 100: correctness 35; budget enforcement 25; evidence and fairness 25; simplicity 15. Return JSON with per-criterion scores, reasons, uncertainty and winner or tie. No measured equal-compute claim is made. All deterministic author tests and 4 held-out checks per candidate pass. These tests check rejection without mutation, threshold fairness, delayed publication, budget and reputation conservation across 50 seeds. The synthetic simulator is not real model performance.
+
+ANONYMOUS CANDIDATE X
+export function random(seed){let a=seed>>>0; return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+export class Simulator {
+  constructor({members=6,budget=200,seed=42,sharing=true,diversity=true,scenario='marketing'}={}){
+    if(!Number.isInteger(members)||members<2||members>20||!Number.isInteger(budget)||budget<50||budget>2000||!Number.isInteger(seed)||seed<0||seed>999999||!['marketing','research','coding'].includes(scenario))throw Error('Invalid simulation settings');
+    this.config={members,budget,seed,sharing,diversity,scenario};this.rng=random(seed);this.round=0;this.maxRounds=12;this.done=false;this.history=[];this.events=[];this.notes=[];this.phase='Ready';
+    this.agents=Array.from({length:members},(_,i)=>({id:i,name:['Atlas','Nova','Sage','Echo','Orbit','Pixel','Cedar','Lumen','Kite','Sol'][i%10]+(i>=10?' II':''),provider:diversity?['GPT · mock','Claude · mock','DeepSeek · mock'][i%3]:'GPT · mock',team:i%2?'B':'A',active:true,points:0,spent:0,cooldownUntil:null}));
+    this.total=members*budget;let team=Math.floor(this.total*.4);this.remaining={A:team,B:team,referee:this.total-2*team};this.initial={...this.remaining};this.scores={A:0,B:0};this.spent=0;this.successes={A:0,B:0};
+  }
+  log(kind,text){this.events.unshift({round:this.round,kind,text});}
+  leave(id){let a=this.agents.find(x=>x.id===id);if(!a||!a.active)return false;a.active=false;a.cooldownUntil=183;this.log('membership',`${a.name} left. Future access revoked; 183-day rejoining cooldown. Committed budget stays pooled.`);return true;}
+  charge(bucket,amount){if(!['A','B','referee'].includes(bucket)||!Number.isInteger(amount)||amount<0||amount>this.remaining[bucket])throw Error('Budget limit');this.remaining[bucket]-=amount;this.spent+=amount;}
+  step(){
+    if(this.done)return false;
+    if(!['A','B'].every(t=>this.agents.some(a=>a.active&&a.team===t))){this.done=true;this.phase='Stopped · team unavailable';this.log('system','Both teams need an active member. Start a new room to rebalance.');return false;}
+    this.round++;this.phase='Referee verified';
+    const reviewCost=Math.max(1,Math.floor(this.initial.referee/this.maxRounds));
+    if(this.remaining.referee<reviewCost){this.done=true;this.phase='Referee budget exhausted';return false;}
+    this.charge('referee',reviewCost);
+    // Both teams work from the same knowledge snapshot; publish after both finish.
+    const priorNotes=this.notes.length;
+    const pendingNotes=[];
+    for(const team of ['A','B']){
+      const active=this.agents.filter(a=>a.active&&a.team===team);
+      const allocation=Math.min(this.remaining[team],Math.max(1,Math.floor(this.initial[team]/this.maxRounds)));
+      this.charge(team,allocation);active.forEach(a=>a.spent+=allocation/active.length);
+      // Deliberately synthetic dynamics. Coefficients are assumptions, not empirical claims.
+      const spendFactor=allocation/Math.max(1,this.initial[team]/this.maxRounds);
+      const coverage=Math.min(.10,active.length*.018);
+      const reuse=this.config.sharing?Math.min(.12,priorNotes*.006):0;
+      const variety=this.config.diversity?.035:0;
+      const overhead=Math.max(0,active.length-4)*.022;
+      const base={marketing:.25,research:.4,coding:.35}[this.config.scenario];
+      const probability=Math.max(.03,Math.min(.9,(base+coverage+reuse+variety-overhead)*spendFactor));
+      const evidence=this.rng();const accepted=evidence<probability;
+      const utility=accepted?Math.round((.55+this.rng()*.45)*100):0;
+      if(accepted){this.successes[team]++;this.scores[team]+=utility;const contributor=active[Math.floor(this.rng()*active.length)];contributor.points+=utility*.7;active.forEach(a=>a.points+=utility*.3/active.length);this.log('verified',`Team ${team}: ${this.outcomeLabel()} verified by simulated referee. +${utility} points; ${contributor.name} receives discovery credit.`);}
+      else this.log('review',`Team ${team}: candidate did not meet the simulated evidence threshold. No points awarded.`);
+      if(this.config.sharing){const author=active[(this.round-1)%active.length];pendingNotes.push({round:this.round,team,author:author.name,text:this.noteText(team,accepted)});}
+    }
+    this.notes.push(...pendingNotes);
+    this.history.push({round:this.round,A:this.scores.A,B:this.scores.B,spent:this.spent});
+    if(this.round>=this.maxRounds){this.done=true;this.phase='Complete';this.log('system','12 rounds complete. Export the experiment or change the seed to test another run.');}
+    return true;
+  }
+  outcomeLabel(){return {marketing:'qualified client',research:'sourced finding',coding:'passing solution'}[this.config.scenario];}
+  noteText(team,accepted){const options={marketing:['Test a narrower company segment.','Compare timing of public requests.','Separate replies from qualified clients.','Record acquisition cost alongside outcomes.'],research:['Cross-check the primary source.','Record uncertainty and date.','Search an independent evidence branch.','Retest the strongest counterexample.'],coding:['Add a hidden edge-case check.','Reproduce the failure in isolation.','Compare the simpler implementation.','Verify the patch against the full contract.']};return `${options[this.config.scenario][(this.round+(team==='A'?0:1))%4]} ${accepted?'Result accepted.':'Current attempt inconclusive.'}`;}
+  export(){return {version:'0.2.0',simulationOnly:true,assumptions:'Seeded synthetic probabilities; no real models, clients, token usage or model training.',config:this.config,round:this.round,done:this.done,phase:this.phase,total:this.total,remaining:this.remaining,scores:this.scores,spent:this.spent,agents:this.agents,notes:this.notes,events:this.events,history:this.history};}
+}
+
+TESTS
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Simulator} from './engine.mjs';
+
+test('unknown and inherited bucket names cannot mutate the ledger',()=>{
+  const s=new Simulator();
+  const before=structuredClone(s.export());
+  for(const bucket of ['unknown','__proto__','constructor','toString',null,undefined,{},['A']]){
+    assert.throws(()=>s.charge(bucket,1),/Budget limit/);
+    assert.deepEqual(s.export(),before);
+  }
+});
+
+test('invalid amounts and overspending leave all balances unchanged',()=>{
+  const s=new Simulator();
+  const before=structuredClone(s.export());
+  for(const amount of [-1,0.5,NaN,Infinity,'1',true,s.remaining.A+1]){
+    assert.throws(()=>s.charge('A',amount),/Budget limit/);
+    assert.deepEqual(s.export(),before);
+  }
+});
+
+test('exact remaining balance can be spent and total remains conserved',()=>{
+  const s=new Simulator();
+  for(const bucket of ['A','B','referee']){
+    s.charge(bucket,s.remaining[bucket]);
+    assert.equal(s.spent+Object.values(s.remaining).reduce((a,b)=>a+b,0),s.total);
+    assert.ok(Object.values(s.remaining).every(n=>Number.isFinite(n)&&n>=0));
+  }
+  assert.equal(s.spent,s.total);
+});
+
+test('both teams use the same pre-round notes at a threshold that previously favored B',()=>{
+  // Six members => three workers/team; base .25 + coverage .054 + diversity .035=.339.
+  // .342 fails both teams against the old snapshot but passed B after A added .006.
+  const s=new Simulator({members:6,budget:200,sharing:true,scenario:'marketing'});
+  s.rng=()=>.342;
+  s.step();
+  assert.deepEqual(s.successes,{A:0,B:0});
+  assert.equal(s.notes.length,2);
+  // Prior round's two published notes now give both teams the same .012 benefit.
+  s.step();
+  assert.deepEqual(s.successes,{A:1,B:1});
+  assert.equal(s.notes.length,4);
+});
+
+test('notes are published only after both candidates are evaluated',()=>{
+  const s=new Simulator({members:2,sharing:true});
+  const observed=[];
+  s.rng=()=>{observed.push(s.notes.length);return .99;};
+  s.step();
+  assert.deepEqual(observed,[0,0]);
+  assert.equal(s.notes.length,2);
+});
+
+test('sharing disabled publishes no notes; repeated seed gives same outcome',()=>{
+  const a=new Simulator({seed:73,sharing:false});
+  const b=new Simulator({seed:73,sharing:false});
+  while(!a.done)a.step();
+  while(!b.done)b.step();
+  assert.deepEqual(a.export(),b.export());
+  assert.deepEqual(a.notes,[]);
+  assert.equal(a.spent+Object.values(a.remaining).reduce((x,y)=>x+y,0),a.total);
+});
+
+
+ANONYMOUS CANDIDATE Y
+export function random(seed){let a=seed>>>0; return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+export class Simulator {
+  constructor({members=6,budget=200,seed=42,sharing=true,diversity=true,scenario='marketing'}={}){
+    if(!Number.isInteger(members)||members<2||members>20||!Number.isInteger(budget)||budget<50||budget>2000||!Number.isInteger(seed)||seed<0||seed>999999||!['marketing','research','coding'].includes(scenario))throw Error('Invalid simulation settings');
+    this.config={members,budget,seed,sharing,diversity,scenario};this.rng=random(seed);this.round=0;this.maxRounds=12;this.done=false;this.history=[];this.events=[];this.notes=[];this.phase='Ready';
+    this.agents=Array.from({length:members},(_,i)=>({id:i,name:['Atlas','Nova','Sage','Echo','Orbit','Pixel','Cedar','Lumen','Kite','Sol'][i%10]+(i>=10?' II':''),provider:diversity?['GPT · mock','Claude · mock','DeepSeek · mock'][i%3]:'GPT · mock',team:i%2?'B':'A',active:true,points:0,spent:0,cooldownUntil:null}));
+    this.total=members*budget;let team=Math.floor(this.total*.4);this.remaining={A:team,B:team,referee:this.total-2*team};this.initial={...this.remaining};this.scores={A:0,B:0};this.spent=0;this.successes={A:0,B:0};
+  }
+  log(kind,text){this.events.unshift({round:this.round,kind,text});}
+  leave(id){let a=this.agents.find(x=>x.id===id);if(!a||!a.active)return false;a.active=false;a.cooldownUntil=183;this.log('membership',`${a.name} left. Future access revoked; 183-day rejoining cooldown. Committed budget stays pooled.`);return true;}
+  charge(bucket,amount){if(!['A','B','referee'].includes(bucket)||!Number.isInteger(amount)||amount<0||amount>this.remaining[bucket])throw Error('Budget limit');this.remaining[bucket]-=amount;this.spent+=amount;}
+  step(){
+    if(this.done)return false;
+    if(!['A','B'].every(t=>this.agents.some(a=>a.active&&a.team===t))){this.done=true;this.phase='Stopped · team unavailable';this.log('system','Both teams need an active member. Start a new room to rebalance.');return false;}
+    this.round++;this.phase='Referee verified';
+    const reviewCost=Math.max(1,Math.floor(this.initial.referee/this.maxRounds));
+    if(this.remaining.referee<reviewCost){this.done=true;this.phase='Referee budget exhausted';return false;}
+    this.charge('referee',reviewCost);
+    const pendingNotes=[];
+    for(const team of ['A','B']){
+      const active=this.agents.filter(a=>a.active&&a.team===team);
+      const allocation=Math.min(this.remaining[team],Math.max(1,Math.floor(this.initial[team]/this.maxRounds)));
+      this.charge(team,allocation);active.forEach(a=>a.spent+=allocation/active.length);
+      // Deliberately synthetic dynamics. Coefficients are assumptions, not empirical claims.
+      const spendFactor=allocation/Math.max(1,this.initial[team]/this.maxRounds);
+      const coverage=Math.min(.10,active.length*.018);
+      const reuse=this.config.sharing?Math.min(.12,this.notes.length*.006):0;
+      const variety=this.config.diversity?.035:0;
+      const overhead=Math.max(0,active.length-4)*.022;
+      const base={marketing:.25,research:.4,coding:.35}[this.config.scenario];
+      const probability=Math.max(.03,Math.min(.9,(base+coverage+reuse+variety-overhead)*spendFactor));
+      const evidence=this.rng();const accepted=evidence<probability;
+      const utility=accepted?Math.round((.55+this.rng()*.45)*100):0;
+      if(accepted){this.successes[team]++;this.scores[team]+=utility;const contributor=active[Math.floor(this.rng()*active.length)];contributor.points+=utility*.7;active.forEach(a=>a.points+=utility*.3/active.length);this.log('verified',`Team ${team}: ${this.outcomeLabel()} verified by simulated referee. +${utility} points; ${contributor.name} receives discovery credit.`);}
+      else this.log('review',`Team ${team}: candidate did not meet the simulated evidence threshold. No points awarded.`);
+      if(this.config.sharing){const author=active[(this.round-1)%active.length];pendingNotes.push({round:this.round,team,author:author.name,text:this.noteText(team,accepted)});}
+    }
+    this.notes.push(...pendingNotes);
+    this.history.push({round:this.round,A:this.scores.A,B:this.scores.B,spent:this.spent});
+    if(this.round>=this.maxRounds){this.done=true;this.phase='Complete';this.log('system','12 rounds complete. Export the experiment or change the seed to test another run.');}
+    return true;
+  }
+  outcomeLabel(){return {marketing:'qualified client',research:'sourced finding',coding:'passing solution'}[this.config.scenario];}
+  noteText(team,accepted){const options={marketing:['Test a narrower company segment.','Compare timing of public requests.','Separate replies from qualified clients.','Record acquisition cost alongside outcomes.'],research:['Cross-check the primary source.','Record uncertainty and date.','Search an independent evidence branch.','Retest the strongest counterexample.'],coding:['Add a hidden edge-case check.','Reproduce the failure in isolation.','Compare the simpler implementation.','Verify the patch against the full contract.']};return `${options[this.config.scenario][(this.round+(team==='A'?0:1))%4]} ${accepted?'Result accepted.':'Current attempt inconclusive.'}`;}
+  export(){return {version:'0.2.0',simulationOnly:true,assumptions:'Seeded synthetic probabilities; no real models, clients, token usage or model training.',config:this.config,round:this.round,done:this.done,phase:this.phase,total:this.total,remaining:this.remaining,scores:this.scores,spent:this.spent,agents:this.agents,notes:this.notes,events:this.events,history:this.history};}
+}
+
+TESTS
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Simulator} from './engine.mjs';
+
+test('unknown, inherited and non-string budget keys reject atomically',()=>{
+  const s=new Simulator();
+  for(const key of ['', 'unknown', '__proto__', 'constructor', 'toString', null, undefined, {}, ['A'], Symbol('A')]){
+    const before=structuredClone({remaining:s.remaining,spent:s.spent});
+    assert.throws(()=>s.charge(key,1), /Budget limit/);
+    assert.deepEqual({remaining:s.remaining,spent:s.spent},before);
+  }
+});
+
+test('invalid amounts and overspending leave valid buckets untouched',()=>{
+  const s=new Simulator();
+  for(const bucket of ['A','B','referee']){
+    for(const value of [-1, .5, NaN, Infinity, '1', true, s.remaining[bucket]+1]){
+      const before=structuredClone({remaining:s.remaining,spent:s.spent});
+      assert.throws(()=>s.charge(bucket,value), /Budget limit/);
+      assert.deepEqual({remaining:s.remaining,spent:s.spent},before);
+    }
+    const amount=s.remaining[bucket];
+    s.charge(bucket,amount);
+    assert.equal(s.remaining[bucket],0);
+  }
+  assert.equal(s.spent,s.total);
+});
+
+test('both teams use only prior-round notes, then share the current round together',()=>{
+  const s=new Simulator({members:2,budget:150,diversity:false,sharing:true,scenario:'marketing'});
+  // Equal initial probability .268. Old code gives B .274 after A publishes.
+  s.rng=()=>.271;
+  s.step();
+  assert.deepEqual(s.successes,{A:0,B:0});
+  assert.equal(s.notes.length,2);
+  assert.deepEqual(s.notes.map(n=>n.team),['A','B']);
+  // Prior notes are now equally usable, raising both probabilities to .280.
+  s.step();
+  assert.deepEqual(s.successes,{A:1,B:1});
+  assert.equal(s.scores.A,s.scores.B);
+  assert.equal(s.notes.length,4);
+});
+
+test('current-round notes are not published while either team is processing',()=>{
+  const s=new Simulator({members:2,sharing:true});
+  const observed=[];
+  const original=s.noteText.bind(s);
+  s.noteText=(team,accepted)=>{observed.push([team,s.notes.length]);return original(team,accepted);};
+  s.step();
+  assert.deepEqual(observed,[['A',0],['B',0]]);
+  s.step();
+  assert.deepEqual(observed.slice(2),[['A',2],['B',2]]);
+});
+
+test('disabled sharing never publishes notes; complete runs conserve the budget',()=>{
+  for(const sharing of [false,true]){
+    const s=new Simulator({members:7,budget:157,sharing});
+    while(!s.done)s.step();
+    assert.equal(s.notes.length,sharing?24:0);
+    assert.equal(s.spent+Object.values(s.remaining).reduce((a,b)=>a+b,0),s.total);
+    assert.ok(Object.values(s.remaining).every(v=>Number.isInteger(v)&&v>=0));
+    assert.equal(s.history.length,12);
+  }
+});
+
+

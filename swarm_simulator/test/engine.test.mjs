@@ -1,0 +1,9 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {Simulator} from '../public/engine.mjs';
+test('conserves work pool across member sizes and all rounds',()=>{for(let members of [2,3,6,12,20]){const s=new Simulator({members});while(!s.done)s.step();assert.equal(s.round,12);assert.equal(s.spent+Object.values(s.remaining).reduce((a,b)=>a+b,0),s.total);assert.equal(s.remaining.A,s.remaining.B);assert.ok(Object.values(s.remaining).every(x=>x>=0));assert.ok(Math.abs(s.agents.reduce((p,a)=>p+a.points,0)-s.scores.A-s.scores.B)<1e-6);}});
+test('same seed yields same transcript',()=>{let a=new Simulator(),b=new Simulator();for(let i=0;i<12;i++){a.step();b.step();}assert.deepEqual(a.export(),b.export());});
+test('no knowledge published with sharing disabled',()=>{let s=new Simulator({sharing:false});s.step();assert.equal(s.notes.length,0);});
+test('member departure never refunds pooled contribution',()=>{let s=new Simulator({members:4}),total=s.total;s.leave(0);assert.equal(s.total,total);assert.equal(s.agents[0].active,false);assert.equal(s.agents[0].cooldownUntil,183);s.step();assert.equal(s.round,1);});
+test('empty team stops execution without spend',()=>{let s=new Simulator({members:2});s.leave(0);assert.equal(s.step(),false);assert.equal(s.spent,0);assert.equal(s.done,true);});
+test('overspend rejected without changing state',()=>{let s=new Simulator();assert.throws(()=>s.charge('A',s.total));assert.equal(s.spent,0);});
+test('invalid input rejected',()=>{for(let c of [{members:1},{members:21},{budget:NaN},{budget:1},{seed:1.2},{scenario:'other'}])assert.throws(()=>new Simulator(c));});
+test('completed simulation cannot spend again',()=>{let s=new Simulator();while(!s.done)s.step();const before=s.export();assert.equal(s.step(),false);assert.deepEqual(s.export(),before);});

@@ -1,0 +1,32 @@
+{
+  "task": "Repair budget validation and symmetric knowledge sharing in Swarm's engine",
+  "rubric": {
+    "correctness": 35,
+    "budgetEnforcement": 25,
+    "evidenceAndFairness": 25,
+    "simplicity": 15
+  },
+  "A": {
+    "status": "candidate_complete",
+    "summary": "Executable candidate submitted. 6 author tests passed; all 4 independent checks passed. Fixes invalid budget keys and same-round knowledge leakage.",
+    "candidateSha256": "c6770d3d55ee6e0a6a058949bb8bf8b6be25b72662f4ebc62990c784031136ef"
+  },
+  "B": {
+    "status": "candidate_complete",
+    "summary": "Executable candidate submitted. 5 author tests passed; all 4 independent checks passed. Fixes invalid budget keys and same-round knowledge leakage.",
+    "candidateSha256": "38580e459ad779e4b73a67984a299f08e33d3eeb83e534629ef2d1c647718218"
+  },
+  "referee": {
+    "provider": "Anthropic Claude",
+    "status": "Awaiting Claude access",
+    "verdict": null
+  },
+  "usage": {
+    "available": false,
+    "note": "Agent token receipts are unavailable; equal task instructions do not establish equal compute use."
+  },
+  "integration": {
+    "status": "shared_fixes_integrated",
+    "note": "Candidate A integrated provisionally for explicit knowledge snapshot and budget validation. This is an engineering choice, not a referee verdict or declared winner."
+  }
+}

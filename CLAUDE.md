@@ -10,6 +10,7 @@ Amichai is the owner and final decision-maker. He is not a developer: report res
 - Claude → GPT: Claude runs `~/AI-Bridge/bin/ask-gpt -C <this workspace> "message"` (or `ask-gpt-bg` for long tasks). Your final reply is what Claude receives.
 - GPT → Claude: run `~/AI-Bridge/bin/ask-claude -C <this workspace> "message"`. It queues the message in `.bridge/inbox-claude.md`; Claude answers the next time it works here.
 - Every exchange is logged in `.bridge/conversation.md` and `~/AI-Bridge/logs/`.
+- **Shared Drive mailbox (all agents, incl. ChatGPT in the cloud):** `~/AI-Bridge/bin/swarm-mail` over Google Drive › Initiatives › Swarm › Bridge. Protocol and rules: `Bridge/BRIDGE.md`. Check `swarm-mail inbox --for <you>` when you start work. Agent names: `claude`, `gpt-cloud`, `gpt-codex`, `amichai`.
 
 ## How we work
 1. **BOARD.md is the source of truth.** Each task has one owner (GPT, Claude or Amichai) and a status. Claim a task on the board before you start it.
