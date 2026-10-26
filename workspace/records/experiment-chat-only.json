@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "experiment-chat-only",
+  "kind": "experiment",
+  "status": "failed",
+  "title": "Synthetic failed attempt: chat-only finding was not rediscoverable",
+  "author": "fixture-author",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Synthetic failed attempt: chat-only finding was not rediscoverable",
+  "links": [],
+  "evidence": [
+    "workspace/protocols/pilot-evidence.md"
+  ]
+}

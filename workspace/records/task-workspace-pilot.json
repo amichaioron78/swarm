@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "task-workspace-pilot",
+  "kind": "task",
+  "status": "review",
+  "title": "Demonstrate searchable history, review and knowledge reuse",
+  "author": "fixture-author",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Demonstrate searchable history, review and knowledge reuse",
+  "links": []
+}
