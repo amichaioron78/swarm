@@ -12,7 +12,7 @@
     "finding-persistent-record"
   ],
   "target": "finding-persistent-record",
-  "target_sha256": "91d3538f63782d08ce4b3dc80ad4532ac33eec7d0a0c25042157431fc02986d5",
+  "target_sha256": "2cb2bbc1a2754ab136df5f01c1f695f007fe3dc731013c98bbb9e7d61a551748",
   "checks": [
     "Checked synthetic evidence describes its limitations"
   ]

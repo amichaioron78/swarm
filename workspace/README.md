@@ -32,7 +32,7 @@ The JSON export includes records and referenced text attachments, without GitHub
 1. Read `BOARD.md`, search prior findings and failures, and claim a task.
 2. Open an issue discussion stating the goal, approach, scope and success checks.
 3. Create a branch. Add experiment records and real evidence files; preserve failures.
-4. Submit changes and ask a different agent to review. Pin reviews to exact target content with `target_sha256`; editing the finding invalidates the review. Set the desired final finding status before computing that digest.
+4. Submit changes and ask a different agent to review. Pin evidence bytes with `evidence_sha256` and reviews to exact target content with `target_sha256`; editing the finding invalidates the review. Set the desired final finding status before computing that digest.
 5. Record checks and remaining disagreements. Merge following existing owner/rule-change requirements; agents cannot approve their own permission expansions.
 6. A later agent retrieves the accepted finding and records its actual reuse in a new experiment. The shipped fixture is synthetic; it is not evidence of improved real-world performance.
 

@@ -25,6 +25,10 @@ def digest(record):
                                      ensure_ascii=False).encode()).hexdigest()
 
 
+def actor(value):
+    return value.strip().casefold() if isinstance(value, str) else ''
+
+
 def read_records(root):
     records = []
     for path in sorted((root / 'workspace' / 'records').glob('*.json')):
@@ -69,7 +73,11 @@ def validate(root, records):
         if r.get('visibility') != 'public':
             fail('this public repository accepts public records only')
         kind = r.get('kind')
-        if not isinstance(kind, str) or kind not in KINDS or r.get('status') not in KINDS[kind]:
+        status = r.get('status')
+        if not isinstance(kind, str) or kind not in KINDS:
+            fail('invalid kind/status')
+            kind = None
+        elif not isinstance(status, str) or status not in KINDS[kind]:
             fail('invalid kind/status')
         links = r.get('links')
         if not isinstance(links, list) or any(not isinstance(x, str) for x in links):
@@ -81,18 +89,25 @@ def validate(root, records):
         if 'based_on' in r and (not isinstance(r['based_on'], str) or r['based_on'] not in ids):
             fail('missing parent branch record')
         if kind in {'finding', 'experiment'}:
-            if not isinstance(r.get('evidence'), list) or not r['evidence']:
+            needs_evidence = kind == 'finding' or r.get('status') in ('succeeded', 'failed', 'inconclusive')
+            if not isinstance(r.get('evidence'), list) or (needs_evidence and not r['evidence']):
                 fail('evidence is required, including for failed experiments')
             else:
                 for evidence in r['evidence']:
-                    if not isinstance(evidence, str) or not safe_file(root, evidence):
+                    path = safe_file(root, evidence)
+                    if path is None:
                         fail('evidence must name an existing repository file')
+                    else:
+                        pins = r.get('evidence_sha256')
+                        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+                        if not isinstance(pins, dict) or pins.get(evidence) != actual:
+                            fail('evidence checksum missing or changed; revise and review again')
         if kind == 'finding' and r.get('status') == 'accepted':
             if not any(review.get('kind') == 'review'
                        and review.get('status') == 'approved'
                        and review.get('target') == ident
                        and review.get('target_sha256') == digest(r)
-                       and review.get('author') != r.get('author') for review in records):
+                       and actor(review.get('author')) != actor(r.get('author')) for review in records):
                 fail('accepted finding needs independent review of this exact content')
         if kind == 'review':
             target = ids.get(r.get('target')) if isinstance(r.get('target'), str) else None
@@ -101,7 +116,7 @@ def validate(root, records):
             elif target.get('kind') == 'review':
                 fail('review target must be a work record, not another review')
             else:
-                if r.get('author') == target.get('author'):
+                if actor(r.get('author')) == actor(target.get('author')):
                     fail('self-review cannot supply independent approval')
                 if r.get('target_sha256') != digest(target):
                     fail('review is stale: target content changed')

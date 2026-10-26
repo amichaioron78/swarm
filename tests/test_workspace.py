@@ -1,6 +1,7 @@
 import copy
 import json
 import tempfile
+import shutil
 import unittest
 from pathlib import Path
 from tools.workspace import bundle, digest, read_records, safe_file, search, validate
@@ -40,6 +41,15 @@ class WorkspaceTests(unittest.TestCase):
         errors = validate(ROOT, self.records)
         self.assertTrue(any('self-review' in e for e in errors))
 
+    def test_author_case_and_whitespace_cannot_bypass_self_review(self):
+        self.records[3]['author'] = '  ' + self.records[2]['author'].upper() + '  '
+        self.assertTrue(any('self-review' in e for e in validate(ROOT, self.records)))
+
+    def test_planned_experiment_can_precede_evidence(self):
+        self.records[0]['status'] = 'planned'
+        self.records[0]['evidence'] = []
+        self.assertEqual(validate(ROOT, self.records), [])
+
     def test_missing_evidence_rejected(self):
         self.records[1]['evidence'] = ['missing.txt']
         self.assertTrue(any('evidence' in e for e in validate(ROOT, self.records)))
@@ -61,6 +71,13 @@ class WorkspaceTests(unittest.TestCase):
         self.assertTrue(any('duplicate' in e for e in errors))
         self.assertTrue(any('missing linked' in e for e in errors))
 
+    def test_evidence_edit_requires_updated_pin_and_review(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            shutil.copytree(ROOT/'workspace', root/'workspace')
+            (root/'workspace/protocols/pilot-evidence.md').write_text('Different evidence')
+            self.assertTrue(any('checksum' in e for e in validate(root, self.records)))
+
     def test_export_is_json_portable_with_attachments(self):
         exported = json.loads(json.dumps(bundle(ROOT, self.records)))
         self.assertEqual(exported['records'], self.records)
@@ -78,6 +95,14 @@ class WorkspaceTests(unittest.TestCase):
             (target/'bad.json').write_text('[]')
             with self.assertRaises(ValueError):
                 read_records(Path(folder))
+
+    def test_malformed_kind_and_status_return_errors(self):
+        for field in ('kind', 'status'):
+            for value in ([], {}, None, 1):
+                with self.subTest(field=field, value=value):
+                    records = read_records(ROOT)
+                    records[0][field] = value
+                    self.assertTrue(validate(ROOT, records))
 
     def test_digest_ignores_json_key_order(self):
         value = self.records[0]
