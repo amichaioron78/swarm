@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "review-persistent-record",
+  "kind": "review",
+  "status": "approved",
+  "title": "Fixture peer review; not an actual Claude verdict",
+  "author": "fixture-reviewer",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Fixture peer review; not an actual Claude verdict",
+  "links": [
+    "finding-persistent-record"
+  ],
+  "target": "finding-persistent-record",
+  "target_sha256": "24f8ccd445d5653a9d96b765ba385f5c620bf017c327ea1fc011e4c5a6070c1d",
+  "checks": [
+    "Checked synthetic evidence describes its limitations"
+  ],
+  "owner": "fixture-owner"
+}

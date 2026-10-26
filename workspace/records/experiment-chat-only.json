@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "experiment-chat-only",
+  "kind": "experiment",
+  "status": "failed",
+  "title": "Synthetic failed attempt: chat-only finding was not rediscoverable",
+  "author": "fixture-author",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Synthetic failed attempt: chat-only finding was not rediscoverable",
+  "links": [],
+  "evidence": [
+    "workspace/protocols/pilot-evidence.md"
+  ],
+  "evidence_sha256": {
+    "workspace/protocols/pilot-evidence.md": "429f9052680ea900cc95964724e9e179e8919991c857c87afcfa52638c36397f"
+  },
+  "owner": "fixture-owner"
+}

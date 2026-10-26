@@ -1,0 +1,29 @@
+name: Workspace checks
+on:
+  pull_request:
+  push:
+    branches: [main, poc/github-workspace]
+permissions:
+  contents: read
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python tools/workspace.py validate
+      - run: python -m unittest discover -s tests -v
+      - run: python -m unittest discover -s swarm_mvp -v
+  simulator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test --prefix swarm_simulator

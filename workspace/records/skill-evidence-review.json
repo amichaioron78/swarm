@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "skill-evidence-review",
+  "kind": "skill",
+  "status": "draft",
+  "title": "Evidence review workflow",
+  "author": "fixture-author",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Evidence review workflow",
+  "links": [],
+  "version": "0.1.0",
+  "instructions": "workspace/skills/evidence-review/instructions.md",
+  "permissions": [
+    "repository:read"
+  ],
+  "owner": "fixture-owner"
+}

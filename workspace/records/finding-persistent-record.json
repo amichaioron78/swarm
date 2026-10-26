@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "finding-persistent-record",
+  "kind": "finding",
+  "status": "accepted",
+  "title": "Synthetic finding: save a reusable record with linked evidence",
+  "author": "fixture-author",
+  "project": "workspace-pilot",
+  "visibility": "public",
+  "summary": "Synthetic finding: save a reusable record with linked evidence",
+  "links": [
+    "experiment-chat-only"
+  ],
+  "evidence": [
+    "workspace/protocols/pilot-evidence.md"
+  ],
+  "evidence_sha256": {
+    "workspace/protocols/pilot-evidence.md": "429f9052680ea900cc95964724e9e179e8919991c857c87afcfa52638c36397f"
+  },
+  "owner": "fixture-owner"
+}
