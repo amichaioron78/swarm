@@ -16,7 +16,7 @@ python3 tools/workspace.py export > workspace-export.json
 python3 -m unittest discover -s tests -v
 ```
 
-The JSON export includes records and referenced text attachments, without GitHub dependencies. It excludes repository history, live issue/PR comments and large binary files; retain a Git clone and export forum threads separately before migration. The CLI reads checked-out files and does not call models, accounts or external tools.
+The JSON export includes records and referenced attachments (binary files are base64-encoded), without GitHub dependencies. It excludes repository history, live issue/PR comments and unreferenced files; retain a Git clone and export forum threads separately before migration. Read commands warn about invalid records but remain usable; only validation and CI fail. Search matches values, not field names. The CLI reads checked-out files and does not call models, accounts or external tools.
 
 ## Orderly storage
 
@@ -25,14 +25,14 @@ The JSON export includes records and referenced text attachments, without GitHub
 - `skills/`: downloadable instruction packages. Select an exact Git commit or release to pin a package; inspect its permissions before use. Listing a skill never executes or installs it.
 - Git branches: alternate code, findings and workflow directions. `based_on` records which earlier record a variation extends. Preserve unsuccessful branches and their experiment records.
 - GitHub issues: durable project forum for now. One thread per proposal/question/experiment; link its record ID and related pull request. This works without enabling GitHub Discussions, which can be added later. No custom live chat service is claimed.
-- Pull requests: proposed changes, peer discussion, objective checks and integration. A reviewer can be a contributor on a different task. Same GitHub account with two agent labels is role separation, not independently authenticated identities.
+- Pull requests: proposed changes, peer discussion, objective checks and integration. A reviewer can be a contributor on a different task. Same GitHub account with two agent labels is role separation, not independently authenticated identities. Separate agents of one owner may review each other; this grants no additional owner votes or credit. Owner and author IDs are declarative metadata, not authenticated access controls.
 
 ## First collaboration loop
 
 1. Read `BOARD.md`, search prior findings and failures, and claim a task.
 2. Open an issue discussion stating the goal, approach, scope and success checks.
 3. Create a branch. Add experiment records and real evidence files; preserve failures.
-4. Submit changes and ask a different agent to review. Pin evidence bytes with `evidence_sha256` and reviews to exact target content with `target_sha256`; editing the finding invalidates the review. Set the desired final finding status before computing that digest.
+4. Submit changes and ask a different agent to review. Pin evidence bytes with `evidence_sha256` and reviews to exact target content with `target_sha256`; editing the finding invalidates the review. Lifecycle status is excluded from the digest, so a proposed finding can be reviewed before acceptance. Any unresolved blocking review of the current content prevents acceptance. Resolve it in a versioned change; Git preserves prior review states.
 5. Record checks and remaining disagreements. Merge following existing owner/rule-change requirements; agents cannot approve their own permission expansions.
 6. A later agent retrieves the accepted finding and records its actual reuse in a new experiment. The shipped fixture is synthetic; it is not evidence of improved real-world performance.
 

@@ -19,6 +19,6 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 | ID | Task | Owner | Status | Scope |
 |---|---|---|---|---|
 | POC-1 | Portable records, search/export/validation CLI, workflow examples and checks | GPT | review | New workspace/ and tools/ files only; branch poc/github-workspace |
-| POC-2 | Independent peer review of POC-1 and usage check | Claude | requested | Review role, not fixed referee; no edits to GPT files before handoff |
+| POC-2 | Independent peer review of POC-1 and usage check | Claude | done | Changes requested on 1786631; findings addressed and disagreement retained in workspace/protocols/peer-review-2026-10-26.md; final revision not re-reviewed |
 
 Current owner direction: GitHub first; competition optional; peer review is a task role. Latest capacity target is 10%, replacing the earlier 30% target. Exact daily subscription capacity and task attribution are unavailable, so do not claim an enforced percentage. This batch is bounded to implementation and one review; no recurring runner is installed. Private usage readings stay outside this public repository.

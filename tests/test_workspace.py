@@ -1,4 +1,7 @@
 import copy
+import base64
+import subprocess
+import sys
 import json
 import tempfile
 import shutil
@@ -12,6 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 class WorkspaceTests(unittest.TestCase):
     def setUp(self):
         self.records = read_records(ROOT)
+
+    def rec(self, ident):
+        return next(r for r in self.records if r['id'] == ident)
 
     def test_fixture_is_valid(self):
         self.assertEqual(validate(ROOT, self.records), [])
@@ -31,23 +37,23 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(by_id[second['based_on']]['status'], 'failed')
 
     def test_edited_finding_invalidates_review(self):
-        self.records[2]['summary'] = 'New unsupported claim'
+        self.rec('finding-persistent-record')['summary'] = 'New unsupported claim'
         errors = validate(ROOT, self.records)
         self.assertTrue(any('stale' in e for e in errors))
         self.assertTrue(any('independent review' in e for e in errors))
 
     def test_self_review_rejected(self):
-        self.records[3]['author'] = self.records[2]['author']
+        self.rec('review-persistent-record')['author'] = self.rec('finding-persistent-record')['author']
         errors = validate(ROOT, self.records)
         self.assertTrue(any('self-review' in e for e in errors))
 
     def test_author_case_and_whitespace_cannot_bypass_self_review(self):
-        self.records[3]['author'] = '  ' + self.records[2]['author'].upper() + '  '
+        self.rec('review-persistent-record')['author'] = '  ' + self.rec('finding-persistent-record')['author'].upper() + '  '
         self.assertTrue(any('self-review' in e for e in validate(ROOT, self.records)))
 
     def test_planned_experiment_can_precede_evidence(self):
-        self.records[0]['status'] = 'planned'
-        self.records[0]['evidence'] = []
+        self.rec('experiment-chat-only')['status'] = 'planned'
+        self.rec('experiment-chat-only')['evidence'] = []
         self.assertEqual(validate(ROOT, self.records), [])
 
     def test_missing_evidence_rejected(self):
@@ -65,8 +71,8 @@ class WorkspaceTests(unittest.TestCase):
             self.assertIsNone(safe_file(root, 'escape'))
 
     def test_duplicate_and_missing_link_rejected(self):
-        self.records.append(copy.deepcopy(self.records[0]))
-        self.records[0]['links'] = ['not-found']
+        self.records.append(copy.deepcopy(self.rec('experiment-chat-only')))
+        self.rec('experiment-chat-only')['links'] = ['not-found']
         errors = validate(ROOT, self.records)
         self.assertTrue(any('duplicate' in e for e in errors))
         self.assertTrue(any('missing linked' in e for e in errors))
@@ -104,8 +110,60 @@ class WorkspaceTests(unittest.TestCase):
                     records[0][field] = value
                     self.assertTrue(validate(ROOT, records))
 
+    def test_lifecycle_change_keeps_substantive_review_valid(self):
+        finding = self.rec('finding-persistent-record')
+        original = digest(finding)
+        finding['status'] = 'proposed'
+        self.assertEqual(digest(finding), original)
+        finding['status'] = 'accepted'
+        self.assertEqual(validate(ROOT, self.records), [])
+
+    def test_blocking_review_prevents_acceptance(self):
+        blocker = copy.deepcopy(self.rec('review-persistent-record'))
+        blocker.update(id='review-blocker', author='another-reviewer', status='changes_requested')
+        self.records.append(blocker)
+        self.assertTrue(any('blocking' in e for e in validate(ROOT, self.records)))
+
+    def test_export_preserves_binary_bytes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'evidence.bin').write_bytes(b'\x89PNG\xff')
+            exported = bundle(root, [{'evidence': ['evidence.bin']}])
+            item = exported['files']['evidence.bin']
+            self.assertEqual(base64.b64decode(item['content']), b'\x89PNG\xff')
+
+    def test_empty_review_check_rejected(self):
+        self.rec('review-persistent-record')['checks'] = ['']
+        self.assertTrue(any('checks' in e for e in validate(ROOT, self.records)))
+
+    def test_search_does_not_match_property_names(self):
+        self.assertEqual(search(self.records, 'schema_version'), [])
+
+    def test_invalid_record_does_not_block_read_only_search(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            shutil.copytree(ROOT/'workspace', root/'workspace')
+            target = root/'workspace/records/finding-persistent-record.json'
+            value = json.loads(target.read_text())
+            value['summary'] = 'Changed unreviewed claim'
+            target.write_text(json.dumps(value))
+            result = subprocess.run([sys.executable, str(ROOT/'tools/workspace.py'),
+                                     '--root', str(root), 'search', 'failed'],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0)
+            self.assertIn('WARNING', result.stderr)
+            self.assertTrue(json.loads(result.stdout))
+
+    def test_bad_json_names_the_file(self):
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)/'workspace'/'records'
+            target.mkdir(parents=True)
+            (target/'broken.json').write_text('{bad')
+            with self.assertRaisesRegex(ValueError, 'broken.json'):
+                read_records(Path(folder))
+
     def test_digest_ignores_json_key_order(self):
-        value = self.records[0]
+        value = self.rec('experiment-chat-only')
         self.assertEqual(digest(value), digest(dict(reversed(list(value.items())))))
 
 

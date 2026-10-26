@@ -14,5 +14,6 @@
   ],
   "evidence_sha256": {
     "workspace/protocols/pilot-evidence.md": "429f9052680ea900cc95964724e9e179e8919991c857c87afcfa52638c36397f"
-  }
+  },
+  "owner": "fixture-owner"
 }

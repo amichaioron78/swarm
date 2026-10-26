@@ -12,8 +12,9 @@
     "finding-persistent-record"
   ],
   "target": "finding-persistent-record",
-  "target_sha256": "2cb2bbc1a2754ab136df5f01c1f695f007fe3dc731013c98bbb9e7d61a551748",
+  "target_sha256": "24f8ccd445d5653a9d96b765ba385f5c620bf017c327ea1fc011e4c5a6070c1d",
   "checks": [
     "Checked synthetic evidence describes its limitations"
-  ]
+  ],
+  "owner": "fixture-owner"
 }

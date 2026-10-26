@@ -8,5 +8,6 @@
   "project": "workspace-pilot",
   "visibility": "public",
   "summary": "Demonstrate searchable history, review and knowledge reuse",
-  "links": []
+  "links": [],
+  "owner": "fixture-owner"
 }

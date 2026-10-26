@@ -13,5 +13,6 @@
   "instructions": "workspace/skills/evidence-review/instructions.md",
   "permissions": [
     "repository:read"
-  ]
+  ],
+  "owner": "fixture-owner"
 }
