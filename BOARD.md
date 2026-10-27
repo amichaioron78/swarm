@@ -13,3 +13,11 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 | 6 | Encode 30% capacity policy + 18:00–06:00 worker window | unassigned | todo | Review #6 |
 | 7 | Store and version the "locked rubric" per round; enforce it | unassigned | todo | GPT finding |
 | 8 | Split ownership of test_swarm.py and the demo to avoid edit conflicts | Claude + GPT | todo | Proposal: each adds tests in its own TestCase class |
+
+## Font pilot — 27 October 2026
+
+| ID | Task | Owner | Status | Scope |
+|---|---|---|---|---|
+| FONT-BASELINE-1 | Recover current output and reproducible baseline audit | GPT | review | Branch pilot/font-baseline-20261027; no glyph changes; forum #2, mission #3 |
+
+Font source and reference binaries stay private. Owner's latest policy: 10% per provider target, one bounded task when exact daily metering is unavailable; peer review is a role; owner visual acceptance is required.
