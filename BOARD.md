@@ -21,3 +21,5 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 | FONT-BASELINE-1 | Recover current output and reproducible baseline audit | GPT | review | Branch pilot/font-baseline-20261027; no glyph changes; forum #2, mission #3 |
 
 Font source and reference binaries stay private. Owner's latest policy: 10% per provider target, one bounded task when exact daily metering is unavailable; peer review is a role; owner visual acceptance is required.
+
+| FONT-QOF-1 | Isolated existing-font ק terminal trial; reconstruct before editing | GPT | review | Private actual font prototype; no release/score; forum #2; full rebuild pending |
