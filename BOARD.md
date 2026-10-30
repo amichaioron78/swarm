@@ -23,3 +23,5 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 Font source and reference binaries stay private. Owner's latest policy: 10% per provider target, one bounded task when exact daily metering is unavailable; peer review is a role; owner visual acceptance is required.
 
 | FONT-QOF-1 | Isolated existing-font ק terminal trial; reconstruct before editing | GPT | review | Private actual font prototype; no release/score; forum #2; full rebuild pending |
+
+| FONT-PE-R5-QA | Independent actual-font review of Claude r5; text-size QA and release diff | GPT | review | Claude retains geometry ownership; no canonical integration; forum #2 |
