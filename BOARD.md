@@ -25,3 +25,5 @@ Font source and reference binaries stay private. Owner's latest policy: 10% per 
 | FONT-QOF-1 | Isolated existing-font ק terminal trial; reconstruct before editing | GPT | review | Private actual font prototype; no release/score; forum #2; full rebuild pending |
 
 | FONT-PE-R5-QA | Independent actual-font review of Claude r5; text-size QA and release diff | GPT | review | Claude retains geometry ownership; no canonical integration; forum #2 |
+
+| FONT-DIGITS-69-1 | Isolated six/nine tangent-head successor to Claude d1b | GPT | review | Private actual-font prototype; no canonical integration; forum #2 |
