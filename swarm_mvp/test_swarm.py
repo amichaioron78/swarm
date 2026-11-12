@@ -80,4 +80,92 @@ class SwarmTests(unittest.TestCase):
         self.assertIsNone(self.r.scoreboard()['winner'])
 
 
+class RoundLifecycleTests(unittest.TestCase):
+    """Board #2 (Claude). Kept in its own class per board #8."""
+    def setUp(self):
+        self.now = datetime(2026, 10, 25, tzinfo=timezone.utc)
+        self.r = Room()
+        self.r.join('one', 'mock-x', 'A', self.now)
+        self.r.join('two', 'mock-y', 'B', self.now)
+
+    def test_round_ids_are_stable_and_increase(self):
+        self.assertEqual(self.r.round_id, 0)
+        self.r.start()
+        self.assertEqual(self.r.round_id, 1)
+        self.r.end_round()
+        self.r.next_round()
+        self.assertEqual(self.r.round_id, 2)
+        self.assertEqual(sorted(self.r.rounds), [1, 2])
+
+    def test_spent_units_never_become_spendable_again(self):
+        self.r.start()
+        self.r.debit('A', 80)
+        self.r.debit('referee', 40)
+        self.r.end_round()
+        self.assertEqual(self.r.available(), 80)
+        self.r.next_round()
+        self.assertEqual(sum(self.r.balances.values()), 80)
+        self.assertEqual(sum(self.r.balances.values()) + self.r.spent, self.r.pool)
+
+    def test_unspent_units_carry_over(self):
+        self.r.start()
+        self.r.end_round()
+        self.r.next_round()
+        self.assertEqual(self.r.balances, {'A': 80, 'B': 80, 'referee': 40})
+
+    def test_membership_changes_only_between_rounds(self):
+        self.r.start()
+        with self.assertRaises(ValueError): self.r.join('three', 'mock-z', 'B', self.now)
+        self.r.end_round()
+        self.r.join('three', 'mock-z', 'B', self.now)
+        self.r.next_round()
+        self.assertEqual(self.r.rounds[1]['members'], {'one': 'A', 'two': 'B'})
+        self.assertEqual(self.r.rounds[2]['members'], {'one': 'A', 'two': 'B', 'three': 'B'})
+        self.assertEqual(sum(self.r.balances.values()), 300)
+
+    def test_rejoin_after_cooldown_in_later_round(self):
+        self.r.join('three', 'mock-z', 'A', self.now)
+        self.r.start()
+        self.r.leave('one', self.now)
+        self.r.end_round()
+        with self.assertRaises(ValueError): self.r.join('one', 'mock-x', 'B', self.now + timedelta(days=182))
+        self.r.join('one', 'mock-x', 'B', self.now + timedelta(days=183))
+        self.r.next_round()
+        self.assertEqual(self.r.rounds[2]['members']['one'], 'B')
+
+    def test_next_round_needs_both_teams(self):
+        self.r.start()
+        self.r.leave('two', self.now)
+        self.r.end_round()
+        with self.assertRaises(ValueError): self.r.next_round()
+        self.assertFalse(self.r.started)
+        self.assertEqual(self.r.round_id, 1)
+
+    def test_call_order_is_enforced(self):
+        with self.assertRaises(ValueError): self.r.end_round()
+        with self.assertRaises(ValueError): self.r.next_round()
+        self.r.start()
+        with self.assertRaises(ValueError): self.r.start()
+        with self.assertRaises(ValueError): self.r.next_round()
+        self.r.end_round()
+        with self.assertRaises(ValueError): self.r.start()
+        with self.assertRaises(ValueError): self.r.debit('A', 1)
+
+    def test_results_are_tagged_and_scored_per_round(self):
+        self.r.start()
+        self.r.record_verified_outcome('r1', 'A', 1, {'one': 1})
+        self.r.debit('A', 5)
+        s1 = self.r.end_round()
+        self.assertEqual(s1['results'], ['r1'])
+        self.assertEqual(s1['spent'], 5)
+        self.r.next_round()
+        self.r.record_verified_outcome('r2', 'B', .5, {'two': 1})
+        self.assertEqual(self.r.scoreboard(1)['winner'], 'A')
+        self.assertEqual(self.r.scoreboard(2)['winner'], 'B')
+        self.assertEqual(self.r.scoreboard(2)['individuals'], {'two': 50})
+        self.assertEqual(self.r.scoreboard()['teams'], {'A': 100.0, 'B': 50.0})
+        with self.assertRaises(ValueError): self.r.scoreboard(9)
+        with self.assertRaises(ValueError): self.r.record_verified_outcome('r1', 'B', 1, {'two': 1})
+
+
 if __name__ == '__main__': unittest.main()
