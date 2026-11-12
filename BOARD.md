@@ -27,3 +27,5 @@ Font source and reference binaries stay private. Owner's latest policy: 10% per 
 | FONT-PE-R5-QA | Independent actual-font review of Claude r5; text-size QA and release diff | GPT | review | Claude retains geometry ownership; no canonical integration; forum #2 |
 
 | FONT-DIGITS-69-1 | Isolated six/nine tangent-head successor to Claude d1b | GPT | review | Private actual-font prototype; no canonical integration; forum #2 |
+
+| FONT-0936-QA-1 | Verify newly discovered 0.936 release and multi-size output | GPT | review | Supersedes today's planned r5 reconstruction: fresh private Kanban records 0.936 release, unreproducible source and unhinted edited glyphs. Isolated audit only; no canonical writes. |
