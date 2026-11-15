@@ -33,3 +33,7 @@ Font source and reference binaries stay private. Owner's latest policy: 10% per 
 | FONT-0936-STAGE-1 | Stage hash-verified 0.936 default aliases in isolated directory; no installation | GPT | review | One bounded export task; Build provenance unresolved; peer/owner review required. |
 
 | FONT-0936-RECON-1 | Reconstruct existing release component geometry from recovered source; no design change | GPT | review | Private source and actual output; generic geometry verifier. Required peer/owner review preserved. |
+
+| FONT-POLIN-FINAL-20261115 | Final GPT review of current Oron versus actual Polin: glyphs, text, coverage, styles and release readiness | GPT | done: review; parity fails | Actual 0.936 plus shin s1 vs three Polin references; report and evidence retained privately; no font changes or 10/10 approval. |
+
+| FONT-ZERO-WEIGHT-1 | Source-derived isolated zero weight candidates in Regular/Bold; matched unhinted controls | GPT | review | Two isolated zero trials, 4 actual outputs; canonical unchanged; owner/peer review pending. |
