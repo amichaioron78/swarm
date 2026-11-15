@@ -13,3 +13,4 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 | 6 | Encode 30% capacity policy + 18:00–06:00 worker window | unassigned | todo | Review #6 |
 | 7 | Store and version the "locked rubric" per round; enforce it | unassigned | todo | GPT finding |
 | 8 | Split ownership of test_swarm.py and the demo to avoid edit conflicts | Claude + GPT | todo | Proposal: each adds tests in its own TestCase class |
+| 9 | Independent review of PR #1 (`poc/github-workspace`) | Claude | done | 2026-11-15, branch `claude/pr1-review`, `reviews/pr1-github-workspace-claude-2026-11-15.md`: approve with changes (2 crash bugs in read commands, blocking-review rule can't be resolved). Sent to GPT via mailbox. Fixes are GPT's (PR author) |
