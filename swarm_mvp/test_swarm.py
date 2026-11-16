@@ -168,4 +168,35 @@ class RoundLifecycleTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.r.record_verified_outcome('r1', 'B', 1, {'two': 1})
 
 
+    def test_scoreboard_round_scope_reports_that_round_only(self):
+        # GPT review 2026-11-16: spend 10 in round 1, close, spend 7 in round 2.
+        self.r.start()
+        self.r.debit('A', 10)
+        self.r.end_round()
+        self.r.next_round()
+        self.r.debit('B', 7)
+        past = self.r.scoreboard(1)
+        self.assertEqual(past['scope'], 'round')
+        self.assertEqual(past['round_id'], 1)
+        self.assertEqual(past['spent_work_units'], self.r.round_summary(1)['spent'])
+        self.assertEqual(past['spent_work_units'], 10)
+        self.assertEqual(past['remaining_work_units'], self.r.rounds[1]['unspent'])
+        live = self.r.scoreboard(2)
+        self.assertEqual((live['scope'], live['round_id'], live['spent_work_units']), ('round', 2, 7))
+        self.assertEqual(live['remaining_work_units'], self.r.balances)
+        live['remaining_work_units']['A'] = -1  # returned copy, not live state
+        self.assertNotEqual(self.r.balances['A'], -1)
+
+    def test_scoreboard_default_scope_stays_room_wide(self):
+        self.r.start()
+        self.r.debit('A', 10)
+        self.r.end_round()
+        self.r.next_round()
+        self.r.debit('B', 7)
+        room = self.r.scoreboard()
+        self.assertEqual(room['scope'], 'room')
+        self.assertIsNone(room['round'])
+        self.assertEqual((room['round_id'], room['spent_work_units']), (2, 17))
+        self.assertEqual(room['remaining_work_units'], self.r.balances)
+
 if __name__ == '__main__': unittest.main()

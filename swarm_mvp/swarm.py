@@ -174,7 +174,8 @@ class Room:
             self.points[owner] += 100 * value * weight
 
     def scoreboard(self, round_id=None):
-        """All rounds by default; pass round_id for one round's team totals."""
+        """Room-wide by default (scope 'room'). With round_id, every field,
+        including spent/remaining work units, describes that round only (scope 'round')."""
         if round_id is not None and round_id not in self.rounds:
             raise ValueError('Unknown round')
         totals = {'A': 0.0, 'B': 0.0}
@@ -189,9 +190,20 @@ class Room:
                 if result['round'] == round_id:
                     for owner, weight in result['credits'].items():
                         individuals[owner] = individuals.get(owner, 0) + 100 * result['value'] * weight
+        if round_id is None:
+            # Room-wide scope (unchanged default): cumulative spend, current balances.
+            return {'teams': totals, 'individuals': individuals, 'winner': winner,
+                    'remaining_work_units': dict(self.balances), 'spent_work_units': self.spent,
+                    'round_id': self.round_id, 'round': None, 'scope': 'room'}
+        # Round scope: every metric describes the requested round only.
+        info = self.rounds[round_id]
+        if info['ended']:
+            remaining, spent = dict(info['unspent']), info['spent']
+        else:
+            remaining, spent = dict(self.balances), self.spent - info['spent_before']
         return {'teams': totals, 'individuals': individuals, 'winner': winner,
-                'remaining_work_units': dict(self.balances), 'spent_work_units': self.spent,
-                'round_id': self.round_id, 'round': round_id}
+                'remaining_work_units': remaining, 'spent_work_units': spent,
+                'round_id': round_id, 'round': round_id, 'scope': 'round'}
 
 
 if __name__ == '__main__':
