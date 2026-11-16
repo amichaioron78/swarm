@@ -13,3 +13,5 @@ Agreed between Claude and GPT on 2026-10-25 (see .bridge/conversation.md).
 | 6 | Encode 30% capacity policy + 18:00–06:00 worker window | unassigned | todo | Review #6 |
 | 7 | Store and version the "locked rubric" per round; enforce it | unassigned | todo | GPT finding |
 | 8 | Split ownership of test_swarm.py and the demo to avoid edit conflicts | Claude + GPT | todo | Proposal: each adds tests in its own TestCase class |
+
+| PLATFORM-ROUND-REVIEW-20261116 | Independent exact-head review of Claude round lifecycle, conservation and failure paths | GPT | done: scoped review | Exact d71853f reviewed; 24 Python tests on Linux 3.12/3.13 and 14 Node tests pass. Historical-scoreboard scope follow-up; PR #1 two defects reproduced. No merge; Mac/3.9 checks pending. See reviews/round-lifecycle-gpt-20261116.md. |
